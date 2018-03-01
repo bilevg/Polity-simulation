@@ -22,7 +22,7 @@ np.set_printoptions(precision=3, suppress=True, threshold=10000)
 
 # Read the combined Polity + GDP data
 df_original = pd.read_csv(
-    '~/Google Drive/GIT/democratizationsimulation/Data/Polity_Data.csv', na_values='-10000')
+    'Polity_Data.csv', na_values='-10000')
 df_original.index = df_original.ccode
 # drop 'ccode'
 # df_original.drop('ccode', axis=1, inplace=True)
@@ -82,13 +82,13 @@ df_sim['Polity_lag1'] = df_complete['Polity_lag1']
 # read the data files for contiguity:
 map_dict = {}
 for year in range(1946, 2017):
-    mapFileName = "~/Google Drive/GIT/democratizationsimulation/Data/World_Map_" + \
+    mapFileName = "World_Map_" + \
         str(year) + ".csv"
     map_dict[year] = pd.read_csv(mapFileName, delimiter=',', index_col=0)
     map_dict[year].index.name = 'ccode'
 # read capital distances
 distances = pd.read_csv(
-    '~/Google Drive/GIT/democratizationsimulation/Data/Capital_Distances.csv',  index_col=0)
+    'Capital_Distances.csv',  index_col=0)
 distances.index.name = 'ccode'
 
 # distances-based neighbors
@@ -189,40 +189,26 @@ def simulate(external_weight=.1,   df=data_copy, neighbors_dict=neighbors,  n_si
 #_______________________________________________________________________________
 
 
-# # multi-processing
-# pool = multiprocessing.Pool(os.cpu_count())
-# results = pd.DataFrame()
-# # for efficiency use a divisor of 8
-# external_weight_range = np.linspace(0.0, 0.07, 8)
-# n_sims = 1000
+# multi-processing
+pool = multiprocessing.Pool(os.cpu_count())
+results = pd.DataFrame()
+# for efficiency use a divisor of cpu_count
+external_weight_range = np.linspace(0.0, 0.07, 8)
+n_sims = 1000
 
-# t = time()
-# results = pool.map(partial(simulate, n_sims=n_sims), external_weight_range)
-# elapsed = time() - t
-# pool.close()
+t = time()
+results = pool.map(partial(simulate, n_sims=n_sims), external_weight_range)
+elapsed = time() - t
+pool.close()
 
-# 'Approximate simulations per minute: {}'.format(
-#     round(n_sims * len(external_weight_range) / (elapsed / 60)))
+'Approximate simulations per minute: {}'.format(
+    round(n_sims * len(external_weight_range) / (elapsed / 60)))
 
-# # plot US over all values
-# for i, e_w in enumerate(external_weight_range):
-#     results[i][1].loc[(slice(None), 140), :].apply('mean', axis=1).plot()
-# plt.show()
+# plot US over all values
+for i, e_w in enumerate(external_weight_range):
+    results[i][1].loc[(slice(None), 2), :].apply('mean', axis=1).plot()
+plt.show()
 
-
-# t = time()
-# df_results = simulate(external_weight=.1, n_sims=1000)
-# print(time() - t)
-
-# # plot polity for US
-# df_results[1].loc[(slice(None), 2), :].plot()
-# plt.show()
-
-
-# # format the results nicely
-# df_results.set_index(pd.MultiIndex.from_arrays(
-#     [list(df.index.get_level_values('Year')), list(df.index.get_level_values('ccode'))], names=['Year', 'ccode']), inplace=True)
-# df_results.columns = ['Internal_Score_' + str(s) for s in range(n_sims)]
 
 # To do for simulation loops:
 # DONE get first available polity score if country has not existed in the year prior, otherwise calculated score from prior year
@@ -233,34 +219,9 @@ def simulate(external_weight=.1,   df=data_copy, neighbors_dict=neighbors,  n_si
 # incorporate Population, which then allows to weigh neigh influence by GDP total
 # change from ccode to featureid everywhere?
 
-# plt.plot(gdp.groupby('country').GDPpfiji = gdp.loc[gdp.country == 'Fiji',:]
-# canada = gdp.loc[gdp.country == 'Canada', :]
-# fiji.plot()
-# plt.show()
-
-# gdp.groupby('country').plot(x="Year", y="GDPpc")
-# plt.show()
-# for title, group in gdp.groupby('country'):
-#     group.plot(x='Year', y='GDPpc', title=title)
-# canada.plot()
-# plt.show()
-
-# tsaplots.plot_acf(canada.GDPpc)
-# # tsaplots.plot_pacf(canada.GDPpc)
-# fig.set_figwidth(20)
-# fig.set_figheight(5)
-# plt.show()
-
-# # autocorrelation function
-# x = canada.GDPpc
-# acf(x)
-# np.corrcoef(x[:-1], x[1:])[0][1]
-
-
-
-# fit a simple model to predict internal score
-mod = smf.ols(formula='Polity ~ np.log(GDPpc) + Polity_lag1 + nmean',
-              data=df_sim)
-res = mod.fit(cov_type='cluster', cov_kwds={'groups': df_complete.ccode})
-res.summary()
-# include population in model? at least use pop to calculate GDP total for weighting neighbor effect
+# # fit a simple model to predict internal score
+# mod = smf.ols(formula='Polity ~ np.log(GDPpc) + Polity_lag1 + nmean',
+#               data=df_sim)
+# res = mod.fit(cov_type='cluster', cov_kwds={'groups': df_complete.ccode})
+# res.summary()
+# # include population in model? at least use pop to calculate GDP total for weighting neighbor effect
