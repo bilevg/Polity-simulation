@@ -9,8 +9,6 @@ library(maptools)
 library(Amelia)
 options(digits=8, max.print=1000, scipen=13)
 ##
-## Polity.old <- read.csv("~/Google Drive/GIT/democratizationsimulation/Data/Datasets/Polity/PolityIV2015.csv",
-##                         na.strings="", stringsAsFactors=FALSE)
 Polity.data <- read.csv("~/Google Drive/GIT/democratizationsimulation/Data/Datasets/Polity/p4v2016.csv",
                         na.strings="", stringsAsFactors=FALSE)
 ## Polity IV 2016 changed Ivory Coast in only 2016 to Cote D'Ivoire, reverse:
