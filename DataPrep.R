@@ -9,7 +9,7 @@ library(maptools)
 library(Amelia)
 options(digits=8, max.print=1000, scipen=13)
 ##
-Polity.data <- read.csv("~/Google Drive/GIT/democratizationsimulation/Data/Datasets/Polity/p4v2016.csv",
+Polity.data <- read.csv("Data/p4v2016.csv",
                         na.strings="", stringsAsFactors=FALSE)
 ## Polity IV 2016 changed Ivory Coast in only 2016 to Cote D'Ivoire, reverse:
 Polity.data$country[Polity.data$country == "Cote D'Ivoire"] <- 'Ivory Coast'
@@ -244,7 +244,7 @@ for(i in seq_along(cs.list)){
     nb.map <- cbind("FEATUREID" = rownames(nb.map), nb.map)
     ## print(dim(nb.map))
     ## save
-    write.table(nb.map, paste("~/Google Drive/GIT/democratizationsimulation/Data/World_Map_",
+    write.table(nb.map, paste("World_Map_",
                               names(cs.list)[i], ".csv", sep=""),
                 quote=FALSE, sep=",", na="-10000", row.names=FALSE)
 }
@@ -275,7 +275,7 @@ colnames(distances) <- c("FEATUREID", dist.dat$FEATUREID)
 ## ## add a final column which sums up all the distances for each country
 ## distances <- cbind(distances, apply(distances, 1, sum, na.rm=T))
 ## write out
-write.table(distances, "~/Google Drive/GIT/democratizationsimulation/Data/Capital_Distances.csv",
+write.table(distances, "Capital_Distances.csv",
             quote=FALSE, sep=",", na="-10000", row.names=FALSE, col.names = TRUE)
 
 ################################################################################
@@ -291,7 +291,7 @@ write.table(distances, "~/Google Drive/GIT/democratizationsimulation/Data/Capita
 ## use all available MP data points and then fill the remaining with WB after converting between the two using 1990 as the year of equivalency (to set up a conversion ratio)
 
 
-## mpd <- read.csv("~/Google Drive/GIT/democratizationsimulation/Data/Datasets/MPD2013Modified.csv",
+## mpd <- read.csv("Datasets/MPD2013Modified.csv",
 ##                 na.strings="", check.names = FALSE)
 ## ## reshape the data in the right format
 ## mpd.df <- mpd %>%
@@ -303,7 +303,7 @@ write.table(distances, "~/Google Drive/GIT/democratizationsimulation/Data/Capita
 ##     spread(key = year, value=GDPpc)
 
 ## import Maddison Project 2018
-mpd <- read.csv("~/Google Drive/GIT/democratizationsimulation/Data/Datasets/mpd2018.csv",
+mpd <- read.csv("Datasets/mpd2018.csv",
                 na.strings="", stringsAsFactors=FALSE)
 ## drop country code, it doesn't match the other ones
 ## remove years before 1946; rename GDPpc column
@@ -401,7 +401,7 @@ combined.df <- join(Polity.df, mpd, by='country')
 ## ## check the missingness map
 ## missmap(combined.df, rank.order = F)
 ## write out a csv file for Python
-write.table(combined.df, "~/Google Drive/GIT/democratizationsimulation/Data/Polity_Data.csv",
+write.table(combined.df, "Polity_Data.csv",
              quote=FALSE, sep=",", na="-10000", row.names=FALSE)
 
 
@@ -467,7 +467,7 @@ write.table(combined.df, "~/Google Drive/GIT/democratizationsimulation/Data/Poli
 
 
 ## ## Countries not in WB Dev Indicators: Taiwan, Yugoslavia, USSR, Czechoslovakia, North and South Yemen. All of them will come from MPD for the years available. North Yemen data can come from MPD (1950-1990) as the South was very small and poor (not an independent state?).
-## wb.df <- read.csv("~/Google Drive/GIT/democratizationsimulation/Data/Datasets/WBGDPpcModified.csv",
+## wb.df <- read.csv("Datasets/WBGDPpcModified.csv",
 ##                 na.strings="", check.names = FALSE)
 ## colnames(wb.df) <- sapply(colnames(wb.df), function(x) {
 ##     if (!is.na(as.numeric(x))) {
@@ -539,7 +539,7 @@ write.table(combined.df, "~/Google Drive/GIT/democratizationsimulation/Data/Poli
 
 
 ## ## Alternative WB DEV indicators
-## wbppp.df <- read.csv("~/Google Drive/GIT/democratizationsimulation/Data/Datasets/WBGDPpcPPP2011Modified.csv",
+## wbppp.df <- read.csv("Datasets/WBGDPpcPPP2011Modified.csv",
 ##                 na.strings="", check.names = FALSE)
 ## colnames(wbppp.df) <- sapply(colnames(wbppp.df), function(x) {
 ##     if (!is.na(as.numeric(x))) {
@@ -677,8 +677,8 @@ write.table(combined.df, "~/Google Drive/GIT/democratizationsimulation/Data/Poli
 
 
 ## ## ## check it out:
-## ## write.table(combined.df, file="~/Google Drive/GIT/democratizationsimulation/Data/Combined.csv", row.names=F,sep=",")
-## write.table(combined.df, "~/Google Drive/GIT/democratizationsimulation/Data/Polity_Data.csv",
+## ## write.table(combined.df, file="Combined.csv", row.names=F,sep=",")
+## write.table(combined.df, "Polity_Data.csv",
 ##              quote=FALSE, sep=",", na="-10000", row.names=FALSE)
 
 
