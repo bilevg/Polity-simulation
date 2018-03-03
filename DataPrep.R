@@ -299,18 +299,7 @@ write.table(distances, paste(data_path,"/Capital_Distances.csv", sep=''),
 ## First and primary source is MPD (2011 $ chained), second is WB Dev Indicators (2010 $ chained), most of the recent values come from there
 ## use all available MP data points and then fill the remaining with WB after converting between the two using 1990 as the year of equivalency (to set up a conversion ratio)
 
-
-## mpd <- read.csv("Data/MPD2013Modified.csv",
-##                 na.strings="", check.names = FALSE)
-## ## reshape the data in the right format
-## mpd.df <- mpd %>%
-##     gather(key = Year, value=GDPpc, na.rm=TRUE)
-## colnames(mpd.df)[2] <- "Country_Name"
-## mpd.df <- mpd.df %>%
-##     mutate(y1 = 'GDPpc') %>% # neat trick to mass rename columns
-##     unite(year, y1, Year) %>%
-##     spread(key = year, value=GDPpc)
-
+## Maddison Project original file, edits of country names (https://www.rug.nl/ggdc/historicaldevelopment/maddison/data/mpd2018.xlsx)
 ## import Maddison Project 2018
 mpd <- read.csv(paste(data_path, "/mpd2018.csv", sep=''),
                 na.strings="", stringsAsFactors=FALSE)

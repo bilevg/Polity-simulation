@@ -113,7 +113,7 @@ for year, dat in map_dict.items():
                    ] = value.sort_values()
     neighbors[year] = neigh_feat
 
-# simulation loop, use a copy because Python only references
+# simulation loop, use a copy
 data_copy = df_sim.astype('float32')
 
 
@@ -194,7 +194,7 @@ cores = os.cpu_count()
 pool = multiprocessing.Pool(cores)
 results = pd.DataFrame()
 # for max efficiency use a divisor of cpu_count, though this is not required of course - any level of granularity of the parameter range is possible. In the case of my DIY workstation, hexacore cpu with hyperthreading, so 12
-external_weight_range = np.linspace(0.0, 0.1, cores)
+external_weight_range = np.linspace(0.0, 0.1, 2 * cores)
 n_sims = 1000
 
 t = time()
@@ -202,8 +202,8 @@ results = pool.map(partial(simulate, n_sims=n_sims), external_weight_range)
 elapsed = time() - t
 pool.close()
 
-'Approximate simulation runs per minute: {}'.format(
-    round(n_sims * len(external_weight_range) / (elapsed / 60)))
+print('Approximate simulation runs per minute: {}'.format(
+    round(n_sims * len(external_weight_range) / (elapsed / 60))))
 
 # # plot US over all values
 # for i, e_w in enumerate(external_weight_range):
