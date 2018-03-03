@@ -1,4 +1,4 @@
-## Data processing file for maps + Polity data + GDPpc and any controls
+## Data processing file for country map shapes + Polity data + GDPpc and any controls
 library(cshapes)
 library(tidyr)
 library(dplyr)
@@ -6,15 +6,24 @@ library(rworldmap)
 library(spdep)
 library(tripack)
 library(maptools)
-library(Amelia)
+library(Amelia) # to map missingness
+library(here) # for subdir file paths
 options(digits=8, max.print=1000, scipen=13)
 ##
-Polity.data <- read.csv("Data/p4v2016.csv",
+## this is just to make sure it works on most OSes
+data_path <- here('Polity-simulation', 'Data')
+## The data file is from: http://www.systemicpeace.org/inscr/p4v2016.xls
+## Extracted the Polity column and made minor edits to the country names for
+## better exact matching
+## It is possible to use the countrycode package for country matching between
+## different datasets, but for more precise control over country-years, a
+## manual approach is better
+Polity.data <- read.csv(paste(data_path, 'p4v2016.csv', sep='/'),
                         na.strings="", stringsAsFactors=FALSE)
 ## Polity IV 2016 changed Ivory Coast in only 2016 to Cote D'Ivoire, reverse:
 Polity.data$country[Polity.data$country == "Cote D'Ivoire"] <- 'Ivory Coast'
 ## same for East Timor
-Polity.data$country[Polity.data$country == "Timor Leste"] <- 'East Timor'
+Polity.data$country[Polity.data$country == "Timor Leste"]  <- 'East Timor'
 ## reshape the data in the right format
 Polity.df <- Polity.data %>%
     filter(year > 1945 ) %>%
@@ -244,7 +253,7 @@ for(i in seq_along(cs.list)){
     nb.map <- cbind("FEATUREID" = rownames(nb.map), nb.map)
     ## print(dim(nb.map))
     ## save
-    write.table(nb.map, paste("World_Map_",
+    write.table(nb.map, paste(data_path, "/World_Map_",
                               names(cs.list)[i], ".csv", sep=""),
                 quote=FALSE, sep=",", na="-10000", row.names=FALSE)
 }
@@ -275,7 +284,7 @@ colnames(distances) <- c("FEATUREID", dist.dat$FEATUREID)
 ## ## add a final column which sums up all the distances for each country
 ## distances <- cbind(distances, apply(distances, 1, sum, na.rm=T))
 ## write out
-write.table(distances, "Capital_Distances.csv",
+write.table(distances, paste(data_path,"/Capital_Distances.csv", sep=''),
             quote=FALSE, sep=",", na="-10000", row.names=FALSE, col.names = TRUE)
 
 ################################################################################
@@ -291,7 +300,7 @@ write.table(distances, "Capital_Distances.csv",
 ## use all available MP data points and then fill the remaining with WB after converting between the two using 1990 as the year of equivalency (to set up a conversion ratio)
 
 
-## mpd <- read.csv("Datasets/MPD2013Modified.csv",
+## mpd <- read.csv("Data/MPD2013Modified.csv",
 ##                 na.strings="", check.names = FALSE)
 ## ## reshape the data in the right format
 ## mpd.df <- mpd %>%
@@ -303,7 +312,7 @@ write.table(distances, "Capital_Distances.csv",
 ##     spread(key = year, value=GDPpc)
 
 ## import Maddison Project 2018
-mpd <- read.csv("Datasets/mpd2018.csv",
+mpd <- read.csv(paste(data_path, "/mpd2018.csv", sep=''),
                 na.strings="", stringsAsFactors=FALSE)
 ## drop country code, it doesn't match the other ones
 ## remove years before 1946; rename GDPpc column
@@ -401,7 +410,7 @@ combined.df <- join(Polity.df, mpd, by='country')
 ## ## check the missingness map
 ## missmap(combined.df, rank.order = F)
 ## write out a csv file for Python
-write.table(combined.df, "Polity_Data.csv",
+write.table(combined.df, paste(data_path, "/Polity_Data.csv", sep=''),
              quote=FALSE, sep=",", na="-10000", row.names=FALSE)
 
 
@@ -467,7 +476,7 @@ write.table(combined.df, "Polity_Data.csv",
 
 
 ## ## Countries not in WB Dev Indicators: Taiwan, Yugoslavia, USSR, Czechoslovakia, North and South Yemen. All of them will come from MPD for the years available. North Yemen data can come from MPD (1950-1990) as the South was very small and poor (not an independent state?).
-## wb.df <- read.csv("Datasets/WBGDPpcModified.csv",
+## wb.df <- read.csv("Data/WBGDPpcModified.csv",
 ##                 na.strings="", check.names = FALSE)
 ## colnames(wb.df) <- sapply(colnames(wb.df), function(x) {
 ##     if (!is.na(as.numeric(x))) {
@@ -539,7 +548,7 @@ write.table(combined.df, "Polity_Data.csv",
 
 
 ## ## Alternative WB DEV indicators
-## wbppp.df <- read.csv("Datasets/WBGDPpcPPP2011Modified.csv",
+## wbppp.df <- read.csv("Data/WBGDPpcPPP2011Modified.csv",
 ##                 na.strings="", check.names = FALSE)
 ## colnames(wbppp.df) <- sapply(colnames(wbppp.df), function(x) {
 ##     if (!is.na(as.numeric(x))) {
@@ -675,13 +684,6 @@ write.table(combined.df, "Polity_Data.csv",
 ## missmap(combined.df, rank.order = F)
 
 
-
-## ## ## check it out:
-## ## write.table(combined.df, file="Combined.csv", row.names=F,sep=",")
-## write.table(combined.df, "Polity_Data.csv",
-##              quote=FALSE, sep=",", na="-10000", row.names=FALSE)
-
-
 ## ## write a function to determine if  FEATUREID contains no duplicates in every year
 ## for (i in 1946:2016){
 ##     feat <- Polity.df[, paste("FEATUREID_", i, sep="")]
@@ -694,50 +696,50 @@ write.table(combined.df, "Polity_Data.csv",
 ## ## new package to try out: countrycode
 ## library(countrycode)
 ## countrycode(Polity.data$ccode, 'p4_ccode', 'cown')
+## unfortunately, many countries will be omitted this way
+
+## ## how to forecast GDPpc for each country (take a few trend values (-1% per year to 3% per year?))
+## library(timeSeries)
+## library(forecast)
+## library(ggplot2)
+## library(tidyr)
+
+## # forecast?
+## mpd.ts <- mpd %>%
+##     select(country, year, GDPpc) %>%
+##     spread(key=country, value=GDPpc)
+
+## mpd.ts <- ts(mpd.ts, start=1946, end=2016, frequency=1)
+
+## future.gdp <- forecast(mpd.ts, h=50, robust = TRUE, additive.only=TRUE, level=c(0), damped=FALSE)
+
+## plot(future.gdp$forecast$'Afghanistan')
+
+## library(corrplot)
+## C <- mpd.ts %>% cor(use='pairwise.complete.obs')
+## diag(C) <- NA
+## mean(C, na.rm=T)
+
+## corrplot(C)
+
+## us <- mpd %>%
+##     filter(country == 'United States')
+
+## country.gdp <- mpd %>%
+##     filter(country == 'United States') %>%
+##     select(GDPpc)
+## fit <- ets(country.gdp$GDPpc, model='AAN',  damped=FALSE)
+## forecast <- forecast(fit, h=50, level=75)
+## summary(forecast)
+## plot(forecast)
 
 
-## how to forecast GDPpc for each country (take a few trend values (-1% per year to 3% per year?))
-library(timeSeries)
-library(forecast)
-library(ggplot2)
-library(tidyr)
-
-# forecast?
-mpd.ts <- mpd %>%
-    select(country, year, GDPpc) %>%
-    spread(key=country, value=GDPpc)
-
-mpd.ts <- ts(mpd.ts, start=1946, end=2016, frequency=1)
-
-future.gdp <- forecast(mpd.ts, h=50, robust = TRUE, additive.only=TRUE, level=c(0), damped=FALSE)
-
-plot(future.gdp$forecast$'Afghanistan')
-
-library(corrplot)
-C <- mpd.ts %>% cor(use='pairwise.complete.obs')
-diag(C) <- NA
-mean(C, na.rm=T)
-
-corrplot(C)
-
-us <- mpd %>%
-    filter(country == 'United States')
-
-country.gdp <- mpd %>%
-    filter(country == 'United States') %>%
-    select(GDPpc)
-fit <- ets(country.gdp$GDPpc, model='AAN',  damped=FALSE)
-forecast <- forecast(fit, h=50, level=75)
-summary(forecast)
-plot(forecast)
+## ## random walk forecast with drift:
+## rwf(us$GDPpc, h=20, drift=TRUE)
 
 
-## random walk forecast with drift:
-rwf(us$GDPpc, h=20, drift=TRUE)
-
-
-## arima forecast
-fit.ar <- auto.arima(us$GDPpc)
-auto.arima(mpd.ts)
-forecast.ar <- forecast(fit.ar, h=20)
-plot(forecast.ar)
+## ## arima forecast
+## fit.ar <- auto.arima(us$GDPpc)
+## auto.arima(mpd.ts)
+## forecast.ar <- forecast(fit.ar, h=20)
+## plot(forecast.ar)

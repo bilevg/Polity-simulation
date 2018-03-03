@@ -22,7 +22,7 @@ np.set_printoptions(precision=3, suppress=True, threshold=10000)
 
 # Read the combined Polity + GDP data
 df_original = pd.read_csv(
-    'Polity_Data.csv', na_values='-10000')
+    'Data/Polity_Data.csv', na_values='-10000')
 df_original.index = df_original.ccode
 # drop 'ccode'
 # df_original.drop('ccode', axis=1, inplace=True)
@@ -82,13 +82,13 @@ df_sim['Polity_lag1'] = df_complete['Polity_lag1']
 # read the data files for contiguity:
 map_dict = {}
 for year in range(1946, 2017):
-    mapFileName = "World_Map_" + \
+    mapFileName = "Data/World_Map_" + \
         str(year) + ".csv"
     map_dict[year] = pd.read_csv(mapFileName, delimiter=',', index_col=0)
     map_dict[year].index.name = 'ccode'
 # read capital distances
 distances = pd.read_csv(
-    'Capital_Distances.csv',  index_col=0)
+    'Data/Capital_Distances.csv',  index_col=0)
 distances.index.name = 'ccode'
 
 # distances-based neighbors
@@ -190,10 +190,11 @@ def simulate(external_weight=.1,   df=data_copy, neighbors_dict=neighbors,  n_si
 
 
 # multi-processing
-pool = multiprocessing.Pool(os.cpu_count())
+cores = os.cpu_count()
+pool = multiprocessing.Pool(cores)
 results = pd.DataFrame()
-# for efficiency use a divisor of cpu_count
-external_weight_range = np.linspace(0.0, 0.07, 8)
+# for max efficiency use a divisor of cpu_count, though this is not required of course - any level of granularity of the parameter range is possible. In the case of my DIY workstation, hexacore cpu with hyperthreading, so 12
+external_weight_range = np.linspace(0.0, 0.1, cores)
 n_sims = 1000
 
 t = time()
@@ -201,13 +202,13 @@ results = pool.map(partial(simulate, n_sims=n_sims), external_weight_range)
 elapsed = time() - t
 pool.close()
 
-'Approximate simulations per minute: {}'.format(
+'Approximate simulation runs per minute: {}'.format(
     round(n_sims * len(external_weight_range) / (elapsed / 60)))
 
-# plot US over all values
-for i, e_w in enumerate(external_weight_range):
-    results[i][1].loc[(slice(None), 2), :].apply('mean', axis=1).plot()
-plt.show()
+# # plot US over all values
+# for i, e_w in enumerate(external_weight_range):
+#     results[i][1].loc[(slice(None), 2), :].apply('mean', axis=1).plot()
+# plt.show()
 
 
 # To do for simulation loops:
