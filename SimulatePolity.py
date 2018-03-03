@@ -202,8 +202,8 @@ results = pool.map(partial(simulate, n_sims=n_sims), external_weight_range)
 elapsed = time() - t
 pool.close()
 
-'Approximate simulation runs per minute: {}'.format(
-    round(n_sims * len(external_weight_range) / (elapsed / 60)))
+print('Approximate simulation runs per minute: {}'.format(
+    round(n_sims * len(external_weight_range) / (elapsed / 60))))
 
 # # plot US over all values
 # for i, e_w in enumerate(external_weight_range):
